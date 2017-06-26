@@ -1,0 +1,27 @@
+{
+  "name": "three-tube",
+  "version": "1.0.0",
+  "description": "Infinite Tubes with Three.js",
+  "main": "index.js",
+  "repository": "git@github.com:kalechao87/three-tube.git",
+  "author": "kalechao87 <kalechao@outlook.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.10.0",
+    "del": "^2.1.0",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-cache": "^0.4.0",
+    "gulp-compass": "^2.1.0",
+    "gulp-cssnano": "^2.1.2",
+    "gulp-if": "^2.0.0",
+    "gulp-imagemin": "^2.4.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-sass": "^2.1.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.1",
+    "gulp-useref": "^3.0.3",
+    "qrcode-terminal": "^0.11.0",
+    "run-sequence": "^1.1.5"
+  }
+}
