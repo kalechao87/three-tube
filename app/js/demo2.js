@@ -39,6 +39,19 @@ Tunnel.prototype.init = function () {
 
   var light = new THREE.HemisphereLight(0xe9eff2, 0x01010f, 1);
   this.scene.add(light);
+
+  // Helper
+  // this.axisHelper = new THREE.AxisHelper( 0.4 );
+  // this.scene.add( this.axisHelper );
+  //
+  // this.cameraHelper = new THREE.CameraHelper( this.camera );
+  // this.scene.add( this.cameraHelper );
+  //
+  // var size = 0.1;
+  // var divisions = 10;
+  //
+  // this.gridHelper = new THREE.GridHelper( size, divisions );
+  // this.scene.add( this.gridHelper );
 };
 
 Tunnel.prototype.createMesh = function () {
@@ -144,6 +157,7 @@ Tunnel.prototype.render = function () {
   // console.log('render');
   this.updateCameraPosition();
   this.updateCurve();
+
   this.renderer.render(this.scene, this.camera);
 
   window.requestAnimationFrame(this.render.bind(this));
