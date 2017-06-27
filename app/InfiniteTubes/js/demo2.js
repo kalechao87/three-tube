@@ -52,7 +52,7 @@ Tunnel.prototype.createMesh = function() {
   var points = [];
   var i = 0;
   var geometry = new THREE.Geometry();
-  
+
   this.scene.remove(this.tubeMesh)
 
   for (i = 0; i < 5; i += 1) {
@@ -82,13 +82,13 @@ Tunnel.prototype.createMesh = function() {
 
 Tunnel.prototype.handleEvents = function() {
   window.addEventListener('resize', this.onResize.bind(this), false);
-  
+
   document.body.addEventListener('mousemove', this.onMouseMove.bind(this), false);
   document.body.addEventListener('touchmove', this.onMouseMove.bind(this), false);
-  
+
   document.body.addEventListener('touchstart', this.onMouseDown.bind(this), false);
   document.body.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-  
+
   document.body.addEventListener('mouseup', this.onMouseUp.bind(this), false);
   document.body.addEventListener('mouseleave', this.onMouseUp.bind(this), false);
   document.body.addEventListener('touchend', this.onMouseUp.bind(this), false);
@@ -133,7 +133,7 @@ Tunnel.prototype.onMouseUp = function() {
 Tunnel.prototype.onResize = function() {
   ww = window.innerWidth;
   wh = window.innerHeight;
-  
+
   isMobile = ww < 500;
 
   this.camera.aspect = ww / wh;
@@ -197,7 +197,7 @@ Tunnel.prototype.render = function(time) {
   this.updateCameraPosition();
 
   this.updateCurve();
-  
+
   for(var i = 0; i < this.particles.length; i++){
     this.particles[i].update(this);
     if(this.particles[i].burst && this.particles[i].percent > 1){
@@ -205,7 +205,7 @@ Tunnel.prototype.render = function(time) {
       i--;
     }
   }
-  
+
   // When mouse down, add a lot of shapes
   if (this.mousedown){
     if(time - this.prevTime > 20){
@@ -217,7 +217,7 @@ Tunnel.prototype.render = function(time) {
       }
     }
   }
-  
+
   this.renderer.render(this.scene, this.camera);
 
   window.requestAnimationFrame(this.render.bind(this));
@@ -257,7 +257,7 @@ function Particle(scene, burst, time) {
     this.mesh.scale.z *= 1.4;
   }
   this.rotate = new THREE.Vector3(-Math.random()*0.1+0.01,0,Math.random()*0.01);
-  
+
   this.pos = new THREE.Vector3(0,0,0);
   scene.add(this.mesh);
 }
@@ -266,9 +266,9 @@ Particle.prototype.cube = new THREE.BoxBufferGeometry(1, 1, 1);
 Particle.prototype.sphere = new THREE.SphereBufferGeometry(1, 6, 6 );
 Particle.prototype.icosahedron = new THREE.IcosahedronBufferGeometry(1,0);
 Particle.prototype.update = function (tunnel) {
-  
+
   this.percent += this.speed * (this.burst?1:tunnel.speed);
-  
+
   this.pos = tunnel.curve.getPoint(1 - (this.percent%1)) .add(this.offset);
   this.mesh.position.x = this.pos.x;
   this.mesh.position.y = this.pos.y;

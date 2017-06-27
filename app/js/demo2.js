@@ -21,7 +21,7 @@ Tunnel.prototype.init = function () {
   this.renderer.setSize(ww, wh);
 
   this.camera = new THREE.PerspectiveCamera(15, ww / wh, 0.01, 100);
-  // this.camera.rotation.y = Math.PI;
+  this.camera.rotation.y = Math.PI;
   this.camera.position.z = 0.35;
 
   // mouse controls
@@ -29,7 +29,7 @@ Tunnel.prototype.init = function () {
   // this.controls.autoRotate = true;
 
   this.scene = new THREE.Scene();
-  // this.scene.fog = new THREE.Fog(0x000d25, 0.05, 1.6);
+  this.scene.fog = new THREE.Fog(0x000d25, 0.05, 1.6);
 
   var light = new THREE.HemisphereLight(0xe9eff2, 0x01010f, 1);
   this.scene.add(light);
@@ -40,6 +40,8 @@ Tunnel.prototype.createMesh = function () {
   var points = [];
   var i = 0;
   var geometry = new THREE.Geometry();
+
+  // this.scene.remove(this.tubeMesh);
 
   for (i = 0; i < 5; i += 1) {
     points.push(new THREE.Vector3(0, 0, 2.5 * (i / 4)));
@@ -66,7 +68,7 @@ Tunnel.prototype.createMesh = function () {
 
   this.tubeGeometry = new THREE.TubeGeometry(this.curve, 70, 0.02, 30, false);
   this.tubeGeometry_o = this.tubeGeometry.clone();
-  this.tubeMesh = new THREE.Group(this.tubeGeometry, this.tubeMaterial);
+  this.tubeMesh = new THREE.Mesh(this.tubeGeometry, this.tubeMaterial);
 
   this.scene.add(this.tubeMesh);
 
