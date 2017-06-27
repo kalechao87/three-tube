@@ -14,6 +14,12 @@ Tunnel.prototype.init = function () {
   this.speed = 1;
   this.prevTime = 0;
 
+  this.mouse = {
+    position: new THREE.Vector2(ww * 0.5, wh * 0.7),
+    ratio: new THREE.Vector2(0, 0),
+    target: new THREE.Vector2(ww * 0.5, wh * 0.7)
+  };
+
   this.renderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: document.querySelector('#scene')
@@ -91,8 +97,25 @@ Tunnel.prototype.onResize = function () {
   this.renderer.setSize(ww, wh);
 };
 
+Tunnel.prototype.updateCameraPosition = function () {
+  // console.log('updateCameraPosition');
+  this.mouse.position.x += (this.mouse.target.x -this.mouse.position.x) / 30;
+  this.mouse.position.y += (this.mouse.target.y - this.mouse.position.y) / 30;
+  // console.log('mouse.position.x is: ' + this.mouse.position.x);
+
+  this.mouse.ratio.x = (this.mouse.position.x / ww);
+  this.mouse.ratio.y = (this.mouse.position.y / wh);
+  // console.log('mouse.ratio.y is: ' + this.mouse.ratio.y);
+
+  this.camera.rotation.z = ((this.mouse.ratio.x) * 1 - 0.05);
+  this.camera.rotation.y = Math.PI - (this.mouse.ratio.x * 0.3 -0.15);
+  this.camera.position.x = ((this.mouse.ratio.x) * 0.044 - 0.025);
+  this.camera.position.y = ((this.mouse.ratio.y) * 0.044 - 0.025);
+};
+
 Tunnel.prototype.render = function () {
   // console.log('render');
+  this.updateCameraPosition();
   this.renderer.render(this.scene, this.camera);
 
   window.requestAnimationFrame(this.render.bind(this));
