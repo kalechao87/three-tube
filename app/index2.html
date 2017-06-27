@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>Infinite Tubes with Three.js | Demo1</title>
+    <title>Infinite Tubes with Three.js | Demo2</title>
     <meta name="description" content="Infinite WebGL tubes as seen on Fornasetti.com made with Three.js">
     <meta name="keywords" content="webgl, effect, tube, infinite, interactive, three.js, background, canvas">
     <meta name="author" content="Kale Chao | FakeCityMan">
@@ -14,7 +14,7 @@
       document.documentElement.className = 'js';
     </script>
   </head>
-  <body class="demo-1 loading">
+  <body class="demo-2 loading">
     <svg class="hidden">
       <symbol id="icon-arrow" viewbox="0 0 24 24">
         <title>arrow</title>
@@ -42,8 +42,8 @@
         </div>
         <h1 class="wk-header__title">Infinite Tubes</h1>
         <nav class="demos">
-          <a href="index.html" class="demo demo--current">Brick Tunnel</a>
-          <a href="index2.html" class="demo">Particles</a>
+          <a href="index.html" class="demo">Brick Tunnel</a>
+          <a href="index2.html" class="demo demo--current">Particles</a>
           <a href="index3.html" class="demo">Star Wars</a>
           <a href="index4.html" class="demo">Blood Cells</a>
           <a href="index5.html" class="demo">Triangle</a>
@@ -59,9 +59,11 @@
 
     <!-- build:js js/vendor.min.js -->
     <script src="js/vendor/three.min.js"></script>
+    <script src="js/vendor/TweenMax.min.js" charset="utf-8"></script>
+    <script src="js/vendor/OrbitControls.js"></script>
     <!-- endbuild -->
     <!--build:js js/main.min.js -->
-    <script src="js/demo1.js" charset="utf-8"></script>
+    <script src="js/demo2.js" charset="utf-8"></script>
     <!-- endbuild -->
 
   </body>
