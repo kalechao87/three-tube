@@ -113,9 +113,37 @@ Tunnel.prototype.updateCameraPosition = function () {
   this.camera.position.y = ((this.mouse.ratio.y) * 0.044 - 0.025);
 };
 
+Tunnel.prototype.updateCurve = function () {
+  var i = 0;
+  var index = 0;
+  var vertice_o = null;
+  var vertice = null;
+  for (i=0; i < this.tubeGeometry.vertices.length; i += 1) {
+    vertice_o = this.tubeGeometry_o.vertices[i];
+    vertice = this.tubeGeometry.vertices[i];
+    index = Math.floor(i / 30);
+    vertice.x += ((vertice_o.x + this.splineMesh.geometry.vertices[index].x) -vertice.x) / 15;
+    vertice.y += ((vertice_o.y + this.splineMesh.geometry.vertices[index].y) -vertice.y) / 15;
+  }
+
+  this.tubeGeometry.verticesNeedUpdate = true;
+
+  this.curve.points[2].x = 0.6 * (1 - this.mouse.ratio.x) -0.3;
+  this.curve.points[3].x = 0;
+  this.curve.points[4].x = 0.6 * (1 - this.mouse.ratio.x) - 0.3;
+
+  this.curve.points[2].y = 0.6 * (1 - this.mouse.ratio.y) - 0.3;
+  this.curve.points[3].y = 0;
+  this.curve.points[4].y = 0.6 * (1 - this.mouse.ratio.y ) - 0.3;
+
+  this.splineMesh.geometry.verticesNeedUpdate = true;
+  this.splineMesh.geometry.vertices = this.curve.getPoints(70);
+};
+
 Tunnel.prototype.render = function () {
   // console.log('render');
   this.updateCameraPosition();
+  this.updateCurve();
   this.renderer.render(this.scene, this.camera);
 
   window.requestAnimationFrame(this.render.bind(this));
