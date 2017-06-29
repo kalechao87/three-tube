@@ -106,6 +106,9 @@ Tunnel.prototype.handleEvents = function () {
   console.log('handleEvents');
   window.addEventListener('resize', this.onResize.bind(this), false);
 
+  document.body.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+  document.body.addEventListener('touchmove', this.onMouseMove.bind(this), false);
+
   document.body.addEventListener('touchstart', this.onMouseDown.bind(this), false);
   document.body.addEventListener('mousedown', this.onMouseDown.bind(this), false);
 
@@ -166,6 +169,16 @@ Tunnel.prototype.onMouseUp = function () {
     ease: Power2.easeIn
   });
 }
+
+Tunnel.prototype.onMouseMove = function (e) {
+  if (e.type === 'mousemove') {
+    this.mouse.target.x = e.clientX;
+    this.mouse.target.y = e.clientY;
+  } else {
+    this.mouse.target.x = e.touches[0].clientX;
+    this.mouse.target.y = e.touches[0].clientY;
+  }
+};
 
 Tunnel.prototype.updateCameraPosition = function () {
   // console.log('updateCameraPosition');
