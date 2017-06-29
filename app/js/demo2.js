@@ -40,6 +40,8 @@ Tunnel.prototype.init = function () {
   var light = new THREE.HemisphereLight(0xe9eff2, 0x01010f, 1);
   this.scene.add(light);
 
+  this.addParticle();
+
   // Helper
   // this.axisHelper = new THREE.AxisHelper( 0.4 );
   // this.scene.add( this.axisHelper );
@@ -52,6 +54,13 @@ Tunnel.prototype.init = function () {
   //
   // this.gridHelper = new THREE.GridHelper( size, divisions );
   // this.scene.add( this.gridHelper );
+};
+
+Tunnel.prototype.addParticle = function () {
+  this.particles = [];
+  for (var i = 0; i < (isMobile?70:150); i++) {
+    this.particles.push(new Particle(this.scene));
+  }
 };
 
 Tunnel.prototype.createMesh = function () {
@@ -96,6 +105,13 @@ Tunnel.prototype.createMesh = function () {
 Tunnel.prototype.handleEvents = function () {
   console.log('handleEvents');
   window.addEventListener('resize', this.onResize.bind(this), false);
+
+  document.body.addEventListener('touchstart', this.onMouseDown.bind(this), false);
+  document.body.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+
+  document.body.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+  document.body.addEventListener('mouseleave', this.onMouseUp.bind(this), false);
+  document.body.addEventListener('touchend', this.onMouseUp.bind(this), false);
 };
 
 Tunnel.prototype.onResize = function () {
@@ -109,6 +125,47 @@ Tunnel.prototype.onResize = function () {
   this.camera.updateProjectionMatrix();
   this.renderer.setSize(ww, wh);
 };
+
+Tunnel.prototype.onMouseDown = function () {
+  this.mousedown = true;
+  TweenMax.to(this.scene.fog.color, 0.6, {
+    r: 1,
+    g: 1,
+    b: 1
+  });
+
+  TweenMax.to(this.tubeMaterial.color, 0.6, {
+    r: 0,
+    g: 0,
+    b: 0
+  });
+
+  TweenMax.to(this, 1.5, {
+    speed: 0.1,
+    ease: Power2.easeInOut
+  });
+};
+
+Tunnel.prototype.onMouseUp = function () {
+  this.mousedown = false;
+
+  TweenMax.to(this.scene.fog.color, 0.6, {
+    r:0,
+    g:0.050980392156862744,
+    b :0.1450980392156863
+  });
+
+  TweenMax.to(this.tubeMaterial.color, 0.6, {
+    r: 1,
+    g: 1,
+    b: 1
+  });
+
+  TweenMax.to(this, 1.5, {
+    speed: 1,
+    ease: Power2.easeIn
+  });
+}
 
 Tunnel.prototype.updateCameraPosition = function () {
   // console.log('updateCameraPosition');
@@ -153,15 +210,96 @@ Tunnel.prototype.updateCurve = function () {
   this.splineMesh.geometry.vertices = this.curve.getPoints(70);
 };
 
-Tunnel.prototype.render = function () {
+Tunnel.prototype.render = function (time) {
   // console.log('render');
   this.updateCameraPosition();
   this.updateCurve();
+
+  for (var i = 0; i < this.particles.length; i++) {
+    this.particles[i].update(this);
+
+    if (this.particles[i].burst && this.particles[i].percent > 1) {
+      console.log('particles[' + i + ']' + this.particles[i]);
+      this.particles.splice(i, 1);
+      i--;
+    }
+  }
+
+  // When mouse down, add a lot of shapes
+  if (this.mousedown) {
+    console.log('mouse down');
+    if (time - this.prevTime > 20) {
+      this.prevTime = time;
+      this.particles.push(new Particle(this.scene, true, time));
+      if (!isMobile) {
+        this.particles.push(new Particle(this.scene, true, time));
+        this.particles.push(new Particle(this.scene, true, time));
+      }
+    }
+  }
 
   this.renderer.render(this.scene, this.camera);
 
   window.requestAnimationFrame(this.render.bind(this));
 };
+
+function Particle(scene, burst, time) {
+  var radius = Math.random() * 0.002 + 0.0003;
+  var geom = this.icosahedron;
+  var random = Math.random();
+
+  if (random > 0.9) {
+    geom = this.cube;
+  } else if (random > 0.8) {
+    geom = this.sphere;
+  }
+  var range = 50;
+  if (burst) {
+    this.color = new THREE.Color('hsl(' + (time / 50) + ',100%, 60%)');
+  } else {
+    var offset = 180;
+    this.color = new THREE.Color('hsl(' + (Math.random() * range + offset) + ',100%, 80%)');
+  }
+
+  var mat = new THREE.MeshPhongMaterial({
+    color: this.color,
+    shading: THREE.FlatShading
+  });
+
+  this.mesh = new THREE.Mesh(geom, mat);
+  this.mesh.scale.set(radius, radius, radius);
+  this.mesh.position.set(0, 0, 1.5);
+  this.percent = burst ? 0.2 : Math.random();
+  this.burst = burst ? true: false;
+  this.offset = new THREE.Vector3((Math.random()-0.5)*0.025, (Math.random()-0.5)*0.025, 0);
+  this.speed = Math.random()*0.004 + 0.0002;
+  if (this.burst) {
+    this.speed += 0.003;
+    this.mesh.scale.x *= 1.4;
+    this.mesh.scale.y *= 1.4;
+    this.mesh.scale.z *= 1.4;
+  }
+  this.rotate = new THREE.Vector3(-Math.random()*0.1+0.01, 0, Math.random()*0.01);
+
+  this.pos = new THREE.Vector3(0, 0, 0);
+  scene.add(this.mesh);
+}
+
+Particle.prototype.cube = new THREE.BoxBufferGeometry(1, 1, 1);
+Particle.prototype.sphere = new THREE.SphereBufferGeometry(1, 6, 6);
+Particle.prototype.icosahedron = new THREE.IcosahedronBufferGeometry(1, 0);
+
+Particle.prototype.update = function (tunnel) {
+  this.percent += this.speed * (this.burst ? 1 : tunnel.speed);
+
+  this.pos = tunnel.curve.getPoint(1-(this.percent%1)).add(this.offset);
+  this.mesh.position.x = this.pos.x;
+  this.mesh.position.y = this.pos.y;
+  this.mesh.position.z = this.pos.z;
+  this.mesh.rotation.x += this.rotate.x;
+  this.mesh.rotation.y += this.rotate.y;
+  this.mesh.rotation.z += this.rotate.z;
+}
 
 window.onload = function () {
   document.body.classList.remove('loading');
