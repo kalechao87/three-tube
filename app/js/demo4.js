@@ -3,7 +3,7 @@ var wh = window.innerHeight;
 var isMobile = ww < 500;
 
 function Tunnel(cell) {
-  // window.cell = cell.children[0];
+  window.cell = cell.children[0];
 
   this.init();
 
@@ -45,6 +45,19 @@ Tunnel.prototype.init = function () {
   this.light = new THREE.HemisphereLight(0xe9eff2, 0x01010f, 1);
   this.scene.add(this.light);
   console.log(this.light);
+
+  this.addParticle();
+};
+
+Tunnel.prototype.addParticle = function () {
+  this.particles = [];
+  this.particlesContainer = new THREE.Object3D();
+  this.scene.add(this.particlesContainer);
+  for (var i = 0; i < (isMobile ? 70 : 150); i++) {
+    var particle = new Particle(this.scene);
+    this.particles.push(particle);
+    this.particlesContainer.add(particle.mesh);
+  }
 };
 
 Tunnel.prototype.createMesh = function () {
@@ -84,6 +97,64 @@ Tunnel.prototype.createMesh = function () {
 
 Tunnel.prototype.handleEvents = function () {
   window.addEventListener('resize', this.onResize.bind(this), false);
+
+  document.body.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+  document.body.addEventListener('touchmove', this.onMouseMove.bind(this), false);
+
+  document.body.addEventListener('touchstart', this.onMouseDown.bind(this), false);
+  document.body.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+
+  document.body.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+  document.body.addEventListener('mouseleave', this.onMouseUp.bind(this), false);
+  document.body.addEventListener('touchend', this.onMouseUp.bind(this), false);
+  window.addEventListener('mouseout', this.onMouseUp.bind(this), false);
+};
+
+Tunnel.prototype.onMouseMove = function(e) {
+  if (e.type === "mousemove") {
+    this.mouse.target.x = e.clientX;
+    this.mouse.target.y = e.clientY;
+  } else {
+    this.mouse.target.x = e.touches[0].clientX;
+    this.mouse.target.y = e.touches[0].clientY;
+  }
+};
+
+Tunnel.prototype.onMouseDown = function () {
+  this.mousedown = true;
+  TweenMax.to(this.scene.fog.color, 0.6, {
+    r: 1,
+    g: 1,
+    b: 1
+  });
+
+  TweenMax.to(this.tubeMaterial.color, 0.6, {
+    r: 0,
+    g: 0,
+    b: 0
+  });
+  TweenMax.to(this, 1.5, {
+    speed: 0.1,
+    ease: Power2.easeInOut
+  });
+};
+
+Tunnel.prototype.onMouseUp = function () {
+  this.mousedown = false;
+  TweenMax.to(this.scene.fog.color, 0.6, {
+    r: 0,
+    g: 0,
+    b: 0
+  });
+  TweenMax.to(this.tubeMaterial.color, 0.6, {
+    r: 0.47,
+    g: 0.06,
+    b: 0
+  });
+  TweenMax.to(this, 0.6, {
+    speed: 1,
+    ease: Power2.easeIn
+  });
 };
 
 Tunnel.prototype.onResize = function () {
@@ -105,7 +176,7 @@ Tunnel.prototype.updateCameraPosition = function () {
 
   this.camera.rotation.z = ((this.mouse.ratio.x) * 1 -0.05);
   this.camera.rotation.y = Math.PI - (this.mouse.ratio.x * 0.3 - 0.15);
-  
+
   this.camera.position.x = ((this.mouse.ratio.x) * 0.044 -0.025);
 
 };
@@ -153,8 +224,91 @@ Tunnel.prototype.render = function (time) {
 
   this.updateCurve();
 
-  this.renderer.render(this.scene, this.camera);
-  window.requestAnimationFrame(this.render.bind(this));
+  this.updateCameraPosition();
+
+    this.updateCurve();
+
+    for (var i = 0; i < this.particles.length; i++) {
+      this.particles[i].update(this);
+      if (this.particles[i].burst && this.particles[i].percent > 1) {
+        console.log('100');
+        this.particlesContainer.remove(this.particles[i].mesh);
+        this.particles.splice(i, 1);
+        i--;
+      }
+    }
+
+    // When mouse down, add a lot of shapes
+    if (this.mousedown) {
+      if (time - this.prevTime > 20) {
+        this.prevTime = time;
+        var particle = new Particle(this.scene, true)
+        this.particles.push(particle);
+        this.particlesContainer.add(particle.mesh);
+        if (!isMobile) {
+          particle = new Particle(this.scene, true)
+          this.particles.push(particle);
+          this.particlesContainer.add(particle.mesh);
+
+          particle = new Particle(this.scene, true)
+          this.particles.push(particle);
+          this.particlesContainer.add(particle.mesh);
+        }
+      }
+    }
+
+    this.renderer.render(this.scene, this.camera);
+
+    window.requestAnimationFrame(this.render.bind(this));
+};
+
+function Particle(scene, burst) {
+  var radius = Math.random() * 0.003 + 0.0003;
+  var geom = cell.geometry;
+  var range = 10;
+  var offset = burst ? 200 : 350;
+  var saturate = Math.floor(Math.random()*20 + 65);
+  var light = burst ? 20 : 56;
+  this.color = new THREE.Color("hsl(" + (Math.random() * range + offset) + ","+saturate+"%,"+light+"%)");
+  var mat = new THREE.MeshPhongMaterial({
+    color: this.color,
+    // shading: THREE.FlatShading
+  });
+  this.mesh = new THREE.Mesh(geom, mat);
+  this.mesh.scale.set(radius, radius, radius);
+  this.mesh.scale.x += (Math.random()-0.5)*0.001;
+  this.mesh.scale.y += (Math.random()-0.5)*0.001;
+  this.mesh.scale.z += (Math.random()-0.5)*0.001;
+  this.mesh.position.set(0, 0, 1.5);
+  this.percent = burst ? 0.2 : Math.random();
+  this.burst = burst ? true : false;
+  this.offset = new THREE.Vector3((Math.random() - 0.5) * 0.025, (Math.random() - 0.5) * 0.025, 0);
+  this.speed = Math.random() * 0.004 + 0.0002;
+  if (this.burst) {
+    this.speed += 0.003;
+    this.mesh.scale.x *= 1.4;
+    this.mesh.scale.y *= 1.4;
+    this.mesh.scale.z *= 1.4;
+  }
+  this.rotate = new THREE.Vector3(-Math.random() * 0.1 + 0.01, 0, Math.random() * 0.01);
+
+  this.pos = new THREE.Vector3(0, 0, 0);
+};
+
+Particle.prototype.cube = new THREE.BoxBufferGeometry(1, 1, 1);
+Particle.prototype.sphere = new THREE.SphereBufferGeometry(1, 6, 6);
+Particle.prototype.icosahedron = new THREE.IcosahedronBufferGeometry(1, 0);
+Particle.prototype.update = function(tunnel) {
+
+  this.percent += this.speed * (this.burst ? 1 : tunnel.speed);
+
+  this.pos = tunnel.curve.getPoint(1 - (this.percent % 1)).add(this.offset);
+  this.mesh.position.x = this.pos.x;
+  this.mesh.position.y = this.pos.y;
+  this.mesh.position.z = this.pos.z;
+  this.mesh.rotation.x += this.rotate.x;
+  this.mesh.rotation.y += this.rotate.y;
+  this.mesh.rotation.z += this.rotate.z;
 };
 
 function init() {
@@ -164,7 +318,7 @@ function init() {
     function (obj) {
       console.log('obj is: ' + obj);
       document.body.classList.remove('loading');
-      window.tunnel = new Tunnel();
+      window.tunnel = new Tunnel(obj);
     }
   );
 }
